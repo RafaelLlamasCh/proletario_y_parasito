@@ -17,17 +17,81 @@ limitations under the License.
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Sheets API Quickstart</title>
+    <title>Proletario y Parasito. Listado de capitulos</title>
     <meta charset="utf-8" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
+        margin: 0;
+        padding: 20px;
+      }
+
+      h1 {
+        color: #333;
+      }
+
+      table {
+        width: 100%;
+        border: 1px solid #ccc;
+        background-color: #fff;
+      }
+
+      th, td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+
+      th {
+        background-color: #f2f2f2;
+      }
+
+      tr:hover {
+        background-color: #f5f5f5;
+      }
+
+      .number {
+        text-align: right;
+      }
+
+      button {
+        margin: 5px;
+        padding: 10px 20px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background-color: #45a049;
+      }
+    </style>
   </head>
   <body>
-    <p>Sheets API Quickstart</p>
+    <h1>Proletario y Parásito</h1>
+    <p>Lista de capitulos</p>
 
     <!--Add buttons to initiate auth sequence and sign out-->
     <button id="authorize_button" onclick="handleAuthClick()">Authorize</button>
     <button id="signout_button" onclick="handleSignoutClick()">Sign Out</button>
 
     <pre id="content" style="white-space: pre-wrap;"></pre>
+
+    <div>
+      <table id="excelTable" style="border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th>Nº</th>
+            <th>Titulo</th>
+            <th>Temporada - Capitulo</th>
+            <th>Invitado</th>
+            <th> </th>            
+          </tr>
+        </thead>
+      </table>
+    </div>
 
     <script type="text/javascript">
       /* exported gapiLoaded */
@@ -132,22 +196,42 @@ limitations under the License.
         }
       }
 
+      function getValues(spreadsheetId, range, callback) {
+        try {
+          gapi.client.sheets.spreadsheets.values.get({
+            spreadsheetId: spreadsheetId,
+            range: range,
+          }).then((response) => {
+            const result = response.result;
+            const numRows = result.values ? result.values.length : 0;
+            console.log(`${numRows} rows retrieved.`);
+            if (callback) callback(response);
+          });
+        } catch (err) {
+          document.getElementById('content').innerText = err.message;
+          return;
+        }
+      }
+
       /**
        * Print the names and majors of students in a sample spreadsheet:
        * https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
+       * https://docs.google.com/spreadsheets/d/1B4r_bcq1HgaEbtMkDU95gqxtlCjXMEAdJOzVxSfPbYk/edit?usp=sharing
        */
       async function listMajors() {
         let response;
+/*        
         try {
           // Fetch first 10 files
           response = await gapi.client.sheets.spreadsheets.values.get({
-            spreadsheetId: '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms',
+            spreadsheetId: '1B4r_bcq1HgaEbtMkDU95gqxtlCjXMEAdJOzVxSfPbYk',
             range: 'Class Data!A2:E',
           });
         } catch (err) {
           document.getElementById('content').innerText = err.message;
           return;
         }
+
         const range = response.result;
         if (!range || !range.values || range.values.length == 0) {
           document.getElementById('content').innerText = 'No values found.';
@@ -158,10 +242,28 @@ limitations under the License.
             (str, row) => `${str}${row[0]}, ${row[4]}\n`,
             'Name, Major:\n');
         document.getElementById('content').innerText = output;
+*/                
+
+        debugger;
+
+        getValues('1B4r_bcq1HgaEbtMkDU95gqxtlCjXMEAdJOzVxSfPbYk', 'Data!A2:E', function(response) {
+          debugger;
+
+          var trHTML = '';
+          const values = response.result.values;
+
+          $.each(values, function (i, item) {
+              trHTML += '<tr><td class="number">' + item[0] + '</td><td>' + item[1] + '</td><td>' + item[2] + '</td><td>' + item[3] + '</td><td><a href="' + item[4] + '">Link</a></td></tr>';
+          });
+          $('#excelTable').append(trHTML);
+
+        });
+
       }
     </script>
     <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
     <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+    <script async defer src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
   </body>
 </html>
 <!-- [END sheets_quickstart] -->
